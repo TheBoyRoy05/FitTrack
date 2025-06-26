@@ -7,10 +7,12 @@ const userMotionRef = { current: {} as Motion };
 
 interface StoreType {
   data: Data;
+  count: number;
   collect: boolean;
   currentPose: Record<string, number[]>;
   userMotionRef: typeof userMotionRef;
   setData: (data: Data | ((prev: Data) => Data)) => void;
+  setCount: (count: number | ((prev: number) => number)) => void;
   setCollect: (collect: boolean | ((prev: boolean) => boolean)) => void;
   setCurrentPose: (
     pose: Record<string, number[]> | ((prev: Record<string, number[]>) => Record<string, number[]>)
@@ -20,9 +22,11 @@ interface StoreType {
 export const useStore = create<StoreType>((set, get) => ({
   data: EMPTY_DATA,
   userMotionRef,
+  count: 0,
   collect: false,
   currentPose: {} as Record<string, number[]>,
   setData: createSetter<StoreType>(set)("data"),
+  setCount: createSetter<StoreType>(set)("count"),
   setCollect: createSetter<StoreType>(set)("collect"),
   setCurrentPose: (update) => {
     const newValue = typeof update === "function" ? update(get().currentPose) : update;

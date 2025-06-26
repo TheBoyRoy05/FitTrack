@@ -10,14 +10,17 @@ const Run = () => {
   };
 
   return (
-    <form className="flex flex-col gap-4 pb-6" onSubmit={handleSubmit}>
-      <Input category="Run" name="Distance" title="Distance (mi)" />
-      <Input category="Run" name="Time" title="Time (seconds)" />
-      <button type="submit" className="btn btn-primary mt-4">
-        Save
-      </button>
-    </form>
-  )
-}
+    <div className="flex flex-col gap-8">
+      <h1 className="text-5xl text-center font-bold hero-text-shadow">Run</h1>
+      <form className="flex flex-col gap-4 pb-6" onSubmit={handleSubmit}>
+        <Input category="Run" name="Distance" title="Distance (mi)" />
+        <Input category="Run" name="Time" title="Time (seconds)" />
+        <button type="submit" className="btn btn-primary mt-4">
+          Save
+        </button>
+      </form>
+    </div>
+  );
+};
 
-export default Run
+export default Run;
