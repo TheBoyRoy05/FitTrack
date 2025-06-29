@@ -16,11 +16,10 @@ export const JOINTS = [
 ];
 
 export const EMPTY_DATA: Data = {
-  "Measurements": null,
-  "Pushups": null,
-  "Squats": null,
-  "Situps": null,
-  "Pullups": null,
-  "Run": null,
-  "Notes": null,
+  measurements: undefined,
+  pushups: undefined,
+  squats: undefined,
+  situps: undefined,
+  pullups: undefined,
+  run: undefined,
 };

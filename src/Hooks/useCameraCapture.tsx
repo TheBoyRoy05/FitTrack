@@ -4,6 +4,55 @@ import * as cam from "@mediapipe/camera_utils";
 import { useStore } from "./useStore";
 import { JOINTS } from "@/Utils/consts";
 
+// Singleton for Pose instance to prevent multiple script loads
+let poseInstance: Pose | null = null;
+let posePromise: Promise<Pose> | null = null;
+
+const getPoseInstance = async (): Promise<Pose> => {
+  if (poseInstance) {
+    return poseInstance;
+  }
+  
+  if (posePromise) {
+    return posePromise;
+  }
+  
+  posePromise = new Promise((resolve) => {
+    const pose = new Pose({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
+    });
+
+    pose.setOptions({
+      modelComplexity: 1,
+      smoothLandmarks: true,
+      enableSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
+
+    poseInstance = pose;
+    resolve(pose);
+  });
+
+  return posePromise;
+};
+
+// Cleanup function for HMR
+const cleanupPoseInstance = () => {
+  if (poseInstance) {
+    poseInstance.close();
+    poseInstance = null;
+    posePromise = null;
+  }
+};
+
+// Handle HMR cleanup
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    cleanupPoseInstance();
+  });
+}
+
 export function useCameraCapture() {
   const { collect, userMotionRef, setCurrentPose } = useStore();
   const collectRef = useRef(collect); 
@@ -19,90 +68,100 @@ export function useCameraCapture() {
   useEffect(() => {
     if (!videoRef.current || !canvasRef.current) return;
 
-    const pose = new Pose({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
-    });
+    let pose: Pose;
+    let isActive = true;
 
-    pose.setOptions({
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
+    const initializePose = async () => {
+      try {
+        pose = await getPoseInstance();
 
-    pose.onResults((results) => {
-      const canvas = canvasRef.current;
-      const video = videoRef.current;
-      const ctx = canvas?.getContext("2d");
-      const landmarks = results.poseLandmarks;
-      const worldLandmarks = results.poseWorldLandmarks;
+        if (!isActive) return;
 
-      if (!canvas || !ctx || !video || !landmarks) return;
+        pose.onResults((results) => {
+          if (!isActive) return;
+          
+          const canvas = canvasRef.current;
+          const video = videoRef.current;
+          const ctx = canvas?.getContext("2d");
+          const landmarks = results.poseLandmarks;
+          const worldLandmarks = results.poseWorldLandmarks;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+          if (!canvas || !ctx || !video || !landmarks) return;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
 
-      ctx.strokeStyle = "lime";
-      ctx.lineWidth = 2;
-      for (const [startIdx, endIdx] of POSE_CONNECTIONS) {
-        const start = landmarks[startIdx];
-        const end = landmarks[endIdx];
-        ctx.beginPath();
-        ctx.moveTo(start.x * canvas.width, start.y * canvas.height);
-        ctx.lineTo(end.x * canvas.width, end.y * canvas.height);
-        ctx.stroke();
-      }
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      for (const landmark of landmarks) {
-        ctx.beginPath();
-        ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "red";
-        ctx.fill();
-      }
-
-      if (worldLandmarks) {
-        const data: Record<string, number[]> = {};
-        for (const key of JOINTS) {
-          const index = POSE_LANDMARKS[key as keyof typeof POSE_LANDMARKS];
-          const lm = worldLandmarks[index];
-          data[key] = [lm.x, -lm.y, -lm.z];
-        }
-
-        if (collectRef.current) {
-          const now = performance.now();
-          if (startTime.current === null) startTime.current = now;
-          const timestamp = ((now - startTime.current) / 1000).toFixed(3);
-
-          userMotionRef.current = { ...userMotionRef.current, [timestamp]: data };
-        }
-
-        setCurrentPose(data);
-      }
-
-      if (!collectRef.current) {
-        startTime.current = null;
-      }
-    });
-
-    if (videoRef.current) {
-      cameraRef.current = new cam.Camera(videoRef.current, {
-        onFrame: async () => {
-          if (videoRef.current) {
-            await pose.send({ image: videoRef.current });
+          ctx.strokeStyle = "lime";
+          ctx.lineWidth = 2;
+          for (const [startIdx, endIdx] of POSE_CONNECTIONS) {
+            const start = landmarks[startIdx];
+            const end = landmarks[endIdx];
+            ctx.beginPath();
+            ctx.moveTo(start.x * canvas.width, start.y * canvas.height);
+            ctx.lineTo(end.x * canvas.width, end.y * canvas.height);
+            ctx.stroke();
           }
-        },
-        width: 600,
-        height: 450,
-      });
-      cameraRef.current.start();
-    }
+
+          for (const landmark of landmarks) {
+            ctx.beginPath();
+            ctx.arc(landmark.x * canvas.width, landmark.y * canvas.height, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "red";
+            ctx.fill();
+          }
+
+          if (worldLandmarks) {
+            const data: Record<string, number[]> = {};
+            for (const key of JOINTS) {
+              const index = POSE_LANDMARKS[key as keyof typeof POSE_LANDMARKS];
+              const lm = worldLandmarks[index];
+              data[key] = [lm.x, -lm.y, -lm.z];
+            }
+
+            if (collectRef.current) {
+              const now = performance.now();
+              if (startTime.current === null) startTime.current = now;
+              const timestamp = ((now - startTime.current) / 1000).toFixed(3);
+
+              userMotionRef.current = { ...userMotionRef.current, [timestamp]: data };
+            }
+
+            setCurrentPose(data);
+          }
+
+          if (!collectRef.current) {
+            startTime.current = null;
+          }
+        });
+
+        if (videoRef.current && isActive) {
+          cameraRef.current = new cam.Camera(videoRef.current, {
+            onFrame: async () => {
+              if (videoRef.current && isActive) {
+                await pose.send({ image: videoRef.current });
+              }
+            },
+            width: 600,
+            height: 450,
+          });
+          cameraRef.current.start();
+        }
+      } catch (error) {
+        console.error('Failed to initialize MediaPipe pose:', error);
+      }
+    };
+
+    initializePose();
 
     return () => {
-      cameraRef.current?.stop();
+      isActive = false;
+      if (cameraRef.current) {
+        cameraRef.current.stop();
+        cameraRef.current = null;
+      }
+      startTime.current = null;
     };
   }, []);
 

@@ -18,7 +18,7 @@ const Input = ({ category, name, title }: InputProps) => {
       <input
         type="number"
         className="input input-bordered w-full"
-        value={data[category] ? (data[category] as any)[name] ?? "" : ""}
+        value={data[category] ? (data[category] as Record<string, number>)[name] ?? "" : ""}
         onChange={(e) =>
           setData({
             ...data,
