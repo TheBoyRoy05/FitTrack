@@ -6,7 +6,7 @@ const Notes = ({ category }: { category: keyof Data }) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor="notes" className="text-sm font-medium">
+      <label htmlFor="notes" className="text-lg font-medium">
         Notes
       </label>
       <textarea

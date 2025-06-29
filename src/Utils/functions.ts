@@ -10,14 +10,20 @@ export function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+export function getDateTime() {
+  const date = new Date().toISOString().split("T")[0];
+  const time = new Date().toISOString().split("T")[1];
+  return { date, time };
+}
+
 export function saveData(data: Data) {
+  localStorage.setItem("date", getDateTime().date);
   localStorage.setItem("data", JSON.stringify(data));
 }
 
 export async function saveMeasurements(measurements?: Measurements) {
   if (!measurements) return;
-  const date = new Date().toISOString().split("T")[0];
-  const time = new Date().toISOString().split("T")[1];
+  const { date, time } = getDateTime();
 
   const { error } = await supabase
     .from("measurements")
@@ -28,11 +34,11 @@ export async function saveMeasurements(measurements?: Measurements) {
 
 export async function saveWorkout(workout?: Workout) {
   if (!workout) return;
-  const date = new Date().toISOString().split("T")[0];
+  const { date } = getDateTime();
 
   const { error } = await supabase
     .from("workouts")
-    .upsert({ ...workout, date })
+    .upsert({ ...workout, date, goal: getGoals()[workout.type!] })
     .eq("type", workout.type)
     .eq("date", date);
   if (error) console.error(error);

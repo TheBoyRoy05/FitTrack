@@ -1,11 +1,15 @@
 import Input from "./Input";
 import Notes from "./Notes";
+import { useStore } from "@/Hooks/useStore";
+import { saveData, saveMeasurements } from "@/Utils/functions";
 
 const Measurements = () => {
+  const { data } = useStore();
+
   return (
     <div className="flex flex-col gap-8">
       <h1 className="text-5xl text-center font-bold hero-text-shadow">Measurements</h1>
-      <form className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4 pb-6">
         <div className="flex gap-4">
           <Input category="measurements" name="left_forearm" title="Left Forearm" />
           <Input category="measurements" name="right_forearm" title="Right Forearm" />
@@ -28,6 +32,15 @@ const Measurements = () => {
         <Input category="measurements" name="weight" title="Weight" />
         <Notes category="measurements" />
       </form>
+      <button
+        className="btn btn-lg btn-primary"
+        onClick={() => {
+          saveMeasurements(data.measurements);
+          saveData(data);
+        }}
+      >
+        Save Measurements
+      </button>
     </div>
   );
 };

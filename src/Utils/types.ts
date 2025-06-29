@@ -17,9 +17,8 @@ export type Measurements = {
 }
 
 export type Workout = {
-  type: "pushups" | "squats" | "situps" | "pullups" | "run",
-  goal?: number,
-  value?: number,
+  type?: "pushups" | "squats" | "situps" | "pullups" | "run",
+  actual?: number,
   sets?: Motion[],
   notes?: string,
   start_time?: string,

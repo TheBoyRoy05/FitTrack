@@ -4,53 +4,59 @@ import Model from "./Model";
 import { useRef, useState } from "react";
 import { useStore } from "@/Hooks/useStore";
 import { useCameraCapture } from "@/Hooks/useCameraCapture";
-import { capitalize, getGoals, sleep } from "@/Utils/functions";
+import { capitalize, getGoals, saveData, saveWorkout, sleep } from "@/Utils/functions";
 import { Motion } from "@/Utils/types";
 import Notes from "../Forms/Notes";
 
 const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" }) => {
-  const { collect, setCollect, count, userMotionRef, data } = useStore();
+  const { collect, setCollect, count, userMotionRef, data, setData } = useStore();
   const { videoRef, canvasRef } = useCameraCapture();
-  const startTime = useRef<number | null>(null);
+  const startTime = useRef<string>("");
+  const running = useRef(false);
   const [text, setText] = useState("");
-  const sets: Motion[] = [];
+  const [sets, setSets] = useState<Motion[]>([]);
 
   const handleStartSet = async () => {
     setText("Ready");
-    await sleep(1000);
+    await sleep(500);
     setText("Set");
-    await sleep(1000);
+    await sleep(500);
     setText("Go!");
-    await sleep(1000);
+    await sleep(500);
     setText("");
 
     setCollect(true);
-    if (!startTime.current) {
-      startTime.current = new Date().getUTCMilliseconds();
-    }
+    running.current = true;
+    userMotionRef.current = {};
+    if (!startTime.current) startTime.current = new Date().toISOString().split("T")[1];
   };
 
   const handleStopSet = () => {
     setCollect(false);
-    sets.push(userMotionRef.current);
+    const newSet = { ...userMotionRef.current };
+    setSets(prevSets => [...prevSets, newSet]);
   };
 
   const handleStopWorkout = () => {
-    const time = (new Date().getUTCMilliseconds() - startTime.current!) / 1000;
-
-    data[workout] = {
-      ...data[workout],
-      goal: getGoals()[workout],
-      value: count,
-      time,
-      sets,
+    running.current = false;
+    const updatedData = {
+      ...data,
+      [workout]: {
+        ...data[workout],
+        type: workout,
+        actual: count,
+        start_time: startTime.current,
+        end_time: new Date().toISOString().split("T")[1],
+        sets,
+      }
     };
+    setData(updatedData);
   };
 
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-5xl text-center font-bold hero-text-shadow">
-        {count} {capitalize(workout)}
+        {count} / {getGoals()[workout]} {capitalize(workout)}
       </h1>
 
       <div className="flex gap-4 relative w-full">
@@ -70,23 +76,33 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
         </div>
       </div>
 
-      <div className="flex w-[30vw] mx-auto justify-around items-center gap-4">
+      <Notes category={workout} />
+
+      <div className="flex w-full items-center gap-4">
         <button
-          className={`btn btn-lg ${collect ? "btn-warning" : "btn-success"}`}
+          className={`btn btn-lg flex-1 ${collect ? "btn-warning" : "btn-success"}`}
           onClick={collect ? handleStopSet : handleStartSet}
         >
           {collect ? "Stop Set" : "Start Set"}
         </button>
         <button
-          className="btn btn-lg btn-error"
-          disabled={!startTime.current}
+          className="btn btn-lg btn-error flex-1"
+          disabled={!running.current}
           onClick={handleStopWorkout}
         >
           Finish Workout
         </button>
       </div>
 
-      <Notes workout={workout} />
+      <button
+        className="btn btn-lg btn-primary w-full"
+        onClick={() => {
+          saveWorkout(data[workout]);
+          saveData(data);
+        }}
+      >
+        Save Workout
+      </button>
     </div>
   );
 };

@@ -9,13 +9,8 @@ let poseInstance: Pose | null = null;
 let posePromise: Promise<Pose> | null = null;
 
 const getPoseInstance = async (): Promise<Pose> => {
-  if (poseInstance) {
-    return poseInstance;
-  }
-  
-  if (posePromise) {
-    return posePromise;
-  }
+  if (poseInstance) return poseInstance;
+  if (posePromise) return posePromise;
   
   posePromise = new Promise((resolve) => {
     const pose = new Pose({
@@ -37,19 +32,13 @@ const getPoseInstance = async (): Promise<Pose> => {
   return posePromise;
 };
 
-// Cleanup function for HMR
-const cleanupPoseInstance = () => {
-  if (poseInstance) {
-    poseInstance.close();
-    poseInstance = null;
-    posePromise = null;
-  }
-};
-
-// Handle HMR cleanup
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
-    cleanupPoseInstance();
+    if (poseInstance) {
+      poseInstance.close();
+      poseInstance = null;
+      posePromise = null;
+    }
   });
 }
 

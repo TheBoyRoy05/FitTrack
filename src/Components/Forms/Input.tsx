@@ -12,7 +12,7 @@ const Input = ({ category, name, title }: InputProps) => {
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <label htmlFor={name} className="text-sm font-medium">
+      <label htmlFor={name} className="text-lg font-medium">
         {title ?? name}
       </label>
       <input
