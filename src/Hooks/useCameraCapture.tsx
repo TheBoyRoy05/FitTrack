@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { Pose, POSE_CONNECTIONS, POSE_LANDMARKS } from "@mediapipe/pose";
 import * as cam from "@mediapipe/camera_utils";
 import { useStore } from "./useStore";
@@ -13,7 +13,7 @@ let posePromise: Promise<Pose> | null = null;
 const getPoseInstance = async (): Promise<Pose> => {
   if (poseInstance) return poseInstance;
   if (posePromise) return posePromise;
-  
+
   posePromise = new Promise((resolve) => {
     const pose = new Pose({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
@@ -45,13 +45,13 @@ if (import.meta.hot) {
 }
 
 export function useCameraCapture(workout: keyof typeof THRESHOLD) {
-  const { collect, userMotionRef, setFrame, setCount } = useStore();
-  const collectRef = useRef(collect); 
+  const { collect, userMotionRef, setFrame, setData } = useStore();
+  const collectRef = useRef(collect);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<cam.Camera | null>(null);
-  const [up, setUp] = useState(false);
-  const [down, setDown] = useState(false);
+  const upRef = useRef(false);
+  const downRef = useRef(false);
 
   useEffect(() => {
     collectRef.current = collect; // keep ref in sync with prop
@@ -71,7 +71,7 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
 
         pose.onResults((results) => {
           if (!isActive) return;
-          
+
           const canvas = canvasRef.current;
           const video = videoRef.current;
           const ctx = canvas?.getContext("2d");
@@ -120,14 +120,18 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
               userMotionRef.current = { ...userMotionRef.current, [timestamp]: frame };
 
               const angle = workoutAngle(workout, frame);
-              console.log(angle);
-              if (angle < THRESHOLD[workout][0]) setDown(true);
-              if (angle > THRESHOLD[workout][1]) setUp(true);
+              console.log(workout, angle, downRef.current, upRef.current);
 
-              if (up && down) {
-                setCount(prev => prev + 1);
-                setDown(false);
-                setUp(false);
+              if (angle < THRESHOLD[workout][0]) downRef.current = true;
+              if (downRef.current && angle > THRESHOLD[workout][1]) upRef.current = true;
+
+              if (upRef.current && downRef.current) {
+                setData((prev) => ({
+                  ...prev,
+                  [workout]: { ...prev[workout], actual: (prev[workout]?.actual || 0) + 1 },
+                }));
+                downRef.current = false;
+                upRef.current = false;
               }
             }
           }
@@ -146,7 +150,7 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
           cameraRef.current.start();
         }
       } catch (error) {
-        console.error('Failed to initialize MediaPipe pose:', error);
+        console.error("Failed to initialize MediaPipe pose:", error);
       }
     };
 
@@ -159,7 +163,7 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
         cameraRef.current = null;
       }
     };
-  }, []);
+  }, [workout]);
 
   return { videoRef, canvasRef };
 }

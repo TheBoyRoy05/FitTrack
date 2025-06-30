@@ -9,7 +9,7 @@ import { Motion } from "@/Utils/types";
 import Notes from "../Forms/Notes";
 
 const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" }) => {
-  const { collect, setCollect, count, userMotionRef, data, setData } = useStore();
+  const { collect, setCollect, userMotionRef, data, setData } = useStore();
   const { videoRef, canvasRef } = useCameraCapture(workout);
   const startTime = useRef<string>("");
   const running = useRef(false);
@@ -18,11 +18,11 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
 
   const handleStartSet = async () => {
     setText("Ready");
-    await sleep(500);
+    await sleep(1000);
     setText("Set");
-    await sleep(500);
+    await sleep(1000);
     setText("Go!");
-    await sleep(500);
+    await sleep(1000);
     setText("");
 
     setCollect(true);
@@ -44,7 +44,6 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
       [workout]: {
         ...data[workout],
         type: workout,
-        actual: count,
         start_time: startTime.current,
         end_time: new Date().toISOString().split("T")[1],
         sets,
@@ -56,7 +55,7 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-5xl text-center font-bold hero-text-shadow">
-        {count} / {getGoals()[workout]} {capitalize(workout)}
+        {data[workout]?.actual || 0} / {getGoals()[workout]} {capitalize(workout)}
       </h1>
 
       <div className="flex gap-4 relative w-full">
