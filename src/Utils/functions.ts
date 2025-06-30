@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Data, Measurements, Workout } from "./types";
+import { Data, Frame, Measurements, Workout } from "./types";
 import { supabase } from "./supabase";
+import { angle, sub } from "./linalg";
+import { THRESHOLD } from "./consts";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -65,3 +67,27 @@ export function getGoals() {
     run: day == 5 ? 4 : 2,
   };
 }
+
+const bodyAngle = (frame: Frame, joint1: string, joint2: string, joint3: string) =>
+  (angle(
+    sub(frame[`LEFT_${joint1}`], frame[`LEFT_${joint2}`]),
+    sub(frame[`LEFT_${joint3}`], frame[`LEFT_${joint2}`])
+  ) +
+    angle(
+      sub(frame[`RIGHT_${joint1}`], frame[`RIGHT_${joint2}`]),
+      sub(frame[`RIGHT_${joint3}`], frame[`RIGHT_${joint2}`])
+    )) /
+  2;
+
+export const toDegs = (radians: number) => (radians * 180) / Math.PI;
+export const armAngles = (frame: Frame) => toDegs(bodyAngle(frame, "WRIST", "ELBOW", "SHOULDER"));
+export const legAngles = (frame: Frame) => toDegs(bodyAngle(frame, "HIP", "KNEE", "ANKLE"));
+export const coreAngles = (frame: Frame) => toDegs(bodyAngle(frame, "KNEE", "HIP", "SHOULDER"));
+
+export const workoutAngle = (workout: keyof typeof THRESHOLD, frame: Frame) => {
+  if (workout === "pushups") return armAngles(frame);
+  if (workout === "squats") return legAngles(frame);
+  if (workout === "situps") return coreAngles(frame);
+  if (workout === "pullups") return armAngles(frame);
+  return 0;
+};

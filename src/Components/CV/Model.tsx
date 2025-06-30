@@ -36,15 +36,15 @@ export const Connector = ({
 };
 
 const Model = () => {
-  const { currentPose } = useStore();
-  if (Object.keys(currentPose).length === 0) return null;
+  const { frame } = useStore();
+  if (Object.keys(frame).length === 0) return null;
 
-  type LandmarkKey = keyof typeof currentPose;
-  const getPoint = (idx: LandmarkKey) => new Vector3(...currentPose[idx]);
+  type LandmarkKey = keyof typeof frame;
+  const getPoint = (idx: LandmarkKey) => new Vector3(...frame[idx]);
 
   return (
     <>
-      {Object.values(currentPose).map((point, i) => (
+      {Object.values(frame).map((point, i) => (
         <mesh key={i} position={new Vector3(...point)}>
           <sphereGeometry args={[0.1, 16, 16]} />
           <meshStandardMaterial color="orange" transparent opacity={0.7} />

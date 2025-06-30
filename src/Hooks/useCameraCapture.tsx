@@ -1,8 +1,10 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Pose, POSE_CONNECTIONS, POSE_LANDMARKS } from "@mediapipe/pose";
 import * as cam from "@mediapipe/camera_utils";
 import { useStore } from "./useStore";
-import { JOINTS } from "@/Utils/consts";
+import { JOINTS, THRESHOLD } from "@/Utils/consts";
+import { Frame } from "@/Utils/types";
+import { workoutAngle } from "@/Utils/functions";
 
 // Singleton for Pose instance to prevent multiple script loads
 let poseInstance: Pose | null = null;
@@ -42,13 +44,14 @@ if (import.meta.hot) {
   });
 }
 
-export function useCameraCapture() {
-  const { collect, userMotionRef, setCurrentPose } = useStore();
+export function useCameraCapture(workout: keyof typeof THRESHOLD) {
+  const { collect, userMotionRef, setFrame, setCount } = useStore();
   const collectRef = useRef(collect); 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraRef = useRef<cam.Camera | null>(null);
-  const startTime = useRef<number | null>(null);
+  const [up, setUp] = useState(false);
+  const [down, setDown] = useState(false);
 
   useEffect(() => {
     collectRef.current = collect; // keep ref in sync with prop
@@ -102,26 +105,31 @@ export function useCameraCapture() {
           }
 
           if (worldLandmarks) {
-            const data: Record<string, number[]> = {};
+            const frame: Frame = {};
             for (const key of JOINTS) {
               const index = POSE_LANDMARKS[key as keyof typeof POSE_LANDMARKS];
               const lm = worldLandmarks[index];
-              data[key] = [lm.x, -lm.y, -lm.z];
+              frame[key] = [lm.x, -lm.y, -lm.z];
             }
 
+            setFrame(frame);
             if (collectRef.current) {
               const now = performance.now();
-              if (startTime.current === null) startTime.current = now;
-              const timestamp = ((now - startTime.current) / 1000).toFixed(3);
+              const timestamp = (now / 1000).toFixed(3);
 
-              userMotionRef.current = { ...userMotionRef.current, [timestamp]: data };
+              userMotionRef.current = { ...userMotionRef.current, [timestamp]: frame };
+
+              const angle = workoutAngle(workout, frame);
+              console.log(angle);
+              if (angle < THRESHOLD[workout][0]) setDown(true);
+              if (angle > THRESHOLD[workout][1]) setUp(true);
+
+              if (up && down) {
+                setCount(prev => prev + 1);
+                setDown(false);
+                setUp(false);
+              }
             }
-
-            setCurrentPose(data);
-          }
-
-          if (!collectRef.current) {
-            startTime.current = null;
           }
         });
 
@@ -150,7 +158,6 @@ export function useCameraCapture() {
         cameraRef.current.stop();
         cameraRef.current = null;
       }
-      startTime.current = null;
     };
   }, []);
 

@@ -1,4 +1,5 @@
-export type Motion = Record<number, Record<string, number[]>>;
+export type Frame = Record<string, number[]>;
+export type Motion = Record<number, Frame>;
 
 export type Measurements = {
   left_forearm?: number,

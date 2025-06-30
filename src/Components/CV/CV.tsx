@@ -10,7 +10,7 @@ import Notes from "../Forms/Notes";
 
 const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" }) => {
   const { collect, setCollect, count, userMotionRef, data, setData } = useStore();
-  const { videoRef, canvasRef } = useCameraCapture();
+  const { videoRef, canvasRef } = useCameraCapture(workout);
   const startTime = useRef<string>("");
   const running = useRef(false);
   const [text, setText] = useState("");
@@ -34,7 +34,7 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
   const handleStopSet = () => {
     setCollect(false);
     const newSet = { ...userMotionRef.current };
-    setSets(prevSets => [...prevSets, newSet]);
+    setSets((prevSets) => [...prevSets, newSet]);
   };
 
   const handleStopWorkout = () => {
@@ -48,7 +48,7 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
         start_time: startTime.current,
         end_time: new Date().toISOString().split("T")[1],
         sets,
-      }
+      },
     };
     setData(updatedData);
   };

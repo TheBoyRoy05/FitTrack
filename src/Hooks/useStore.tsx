@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Data, Motion } from "@/Utils/types";
+import { Data, Frame, Motion } from "@/Utils/types";
 import { createSetter } from "@/Utils/functions";
 import { EMPTY_DATA } from "@/Utils/consts";
 
@@ -7,16 +7,14 @@ const userMotionRef = { current: {} as Motion };
 
 interface StoreType {
   data: Data;
+  frame: Frame;
   count: number;
   collect: boolean;
-  currentPose: Record<string, number[]>;
   userMotionRef: typeof userMotionRef;
   setData: (data: Data | ((prev: Data) => Data)) => void;
+  setFrame: (frame: Frame | ((prev: Frame) => Frame)) => void;
   setCount: (count: number | ((prev: number) => number)) => void;
   setCollect: (collect: boolean | ((prev: boolean) => boolean)) => void;
-  setCurrentPose: (
-    pose: Record<string, number[]> | ((prev: Record<string, number[]>) => Record<string, number[]>)
-  ) => void;
 }
 
 export const useStore = create<StoreType>((set, get) => ({
@@ -24,12 +22,12 @@ export const useStore = create<StoreType>((set, get) => ({
   userMotionRef,
   count: 0,
   collect: false,
-  currentPose: {} as Record<string, number[]>,
+  frame: {} as Frame,
   setData: createSetter<StoreType>(set)("data"),
   setCount: createSetter<StoreType>(set)("count"),
   setCollect: createSetter<StoreType>(set)("collect"),
-  setCurrentPose: (update) => {
-    const newValue = typeof update === "function" ? update(get().currentPose) : update;
-    set({ currentPose: newValue });
+  setFrame: (update) => {
+    const newValue = typeof update === "function" ? update(get().frame) : update;
+    set({ frame: newValue });
   },
 }));

@@ -23,3 +23,10 @@ export const EMPTY_DATA: Data = {
   pullups: undefined,
   run: undefined,
 };
+
+export const THRESHOLD = {
+  pushups: [90, 170],
+  squats: [90, 170],
+  situps: [90, 170],
+  pullups: [90, 170],
+};
