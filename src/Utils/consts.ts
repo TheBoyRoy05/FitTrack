@@ -28,5 +28,5 @@ export const THRESHOLD = {
   pushups: [110, 160],
   squats: [100, 160],
   situps: [100, 140],
-  pullups: [100, 160],
+  pullups: [105, 160],
 };

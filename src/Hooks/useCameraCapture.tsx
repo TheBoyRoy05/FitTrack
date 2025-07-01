@@ -114,14 +114,9 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
 
             setFrame(frame);
             if (collectRef.current) {
-              const now = performance.now();
-              const timestamp = (now / 1000).toFixed(3);
-
-              userMotionRef.current = { ...userMotionRef.current, [timestamp]: frame };
+              userMotionRef.current = { ...userMotionRef.current, [Date.now()]: frame };
 
               const angle = workoutAngle(workout, frame);
-              console.log(workout, angle, downRef.current, upRef.current);
-
               if (angle < THRESHOLD[workout][0]) downRef.current = true;
               if (downRef.current && angle > THRESHOLD[workout][1]) upRef.current = true;
 
@@ -133,6 +128,9 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
                 downRef.current = false;
                 upRef.current = false;
               }
+            } else {
+              downRef.current = false;
+              upRef.current = false;
             }
           }
         });

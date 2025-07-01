@@ -6,13 +6,18 @@ import { useStore } from "./Hooks/useStore";
 import Run from "./Components/Forms/Run";
 import CV from "./Components/CV/CV";
 import { EMPTY_DATA } from "./Utils/consts";
-import { getDateTime } from "./Utils/functions";
+import { getDateTime, getGoal } from "./Utils/functions";
 
 function App() {
   const { data, setData } = useStore();
   const [page, setPage] = useState(0);
   const completedPages = Object.fromEntries(
-    Object.entries({ ...EMPTY_DATA, ...data }).map(([key, value]) => [key, value !== undefined])
+    Object.entries({ ...EMPTY_DATA, ...data }).map(([key, value]) => [
+      key,
+      value && "type" in value
+        ? getGoal(value.type!)! <= (value.actual ?? 0)
+        : value !== undefined,
+    ])
   );
 
   const pageMap = {
@@ -34,7 +39,7 @@ function App() {
     <div className="min-h-screen flex">
       <PrevArrow page={page} setPage={setPage} />
       <div className="min-h-screen flex flex-col w-[60vw] mx-auto py-10">
-        <Timeline events={completedPages} page={page} />
+        <Timeline events={completedPages} page={page} setPage={setPage} />
         {Object.values(pageMap)[page]}
       </div>
       <NextArrow page={page} setPage={setPage} />

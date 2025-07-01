@@ -4,7 +4,7 @@ import Model from "./Model";
 import { useRef, useState } from "react";
 import { useStore } from "@/Hooks/useStore";
 import { useCameraCapture } from "@/Hooks/useCameraCapture";
-import { capitalize, getGoals, saveData, saveWorkout, sleep } from "@/Utils/functions";
+import { capitalize, getGoal, saveData, saveWorkout, sleep } from "@/Utils/functions";
 import { Motion } from "@/Utils/types";
 import Notes from "../Forms/Notes";
 
@@ -13,8 +13,8 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
   const { videoRef, canvasRef } = useCameraCapture(workout);
   const startTime = useRef<string>("");
   const running = useRef(false);
+  const sets = useRef<Motion[]>([]);
   const [text, setText] = useState("");
-  const [sets, setSets] = useState<Motion[]>([]);
 
   const handleStartSet = async () => {
     setText("Ready");
@@ -26,15 +26,18 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
     setText("");
 
     setCollect(true);
-    running.current = true;
-    userMotionRef.current = {};
-    if (!startTime.current) startTime.current = new Date().toISOString().split("T")[1];
+    if (!running.current) {
+      startTime.current = new Date().toISOString().split("T")[1];
+      userMotionRef.current = {};
+      running.current = true;
+      sets.current = [];
+    }
   };
 
   const handleStopSet = () => {
     setCollect(false);
     const newSet = { ...userMotionRef.current };
-    setSets((prevSets) => [...prevSets, newSet]);
+    sets.current = [...sets.current, newSet];
   };
 
   const handleStopWorkout = () => {
@@ -46,16 +49,19 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
         type: workout,
         start_time: startTime.current,
         end_time: new Date().toISOString().split("T")[1],
-        sets,
+        sets: sets.current,
       },
     };
+
     setData(updatedData);
+    saveData(updatedData);
+    saveWorkout(updatedData[workout]);
   };
 
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-5xl text-center font-bold hero-text-shadow">
-        {data[workout]?.actual || 0} / {getGoals()[workout]} {capitalize(workout)}
+        {data[workout]?.actual || 0} / {getGoal(workout)} {capitalize(workout)}
       </h1>
 
       <div className="flex gap-4 relative w-full">
@@ -85,23 +91,13 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
           {collect ? "Stop Set" : "Start Set"}
         </button>
         <button
-          className="btn btn-lg btn-error flex-1"
+          className="btn btn-lg btn-primary flex-1"
           disabled={!running.current}
           onClick={handleStopWorkout}
         >
-          Finish Workout
+          Finish and Save
         </button>
       </div>
-
-      <button
-        className="btn btn-lg btn-primary w-full"
-        onClick={() => {
-          saveWorkout(data[workout]);
-          saveData(data);
-        }}
-      >
-        Save Workout
-      </button>
     </div>
   );
 };

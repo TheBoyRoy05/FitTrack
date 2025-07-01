@@ -2,7 +2,6 @@
 import { Data, Frame, Measurements, Workout } from "./types";
 import { supabase } from "./supabase";
 import { angle, sub } from "./linalg";
-import { THRESHOLD } from "./consts";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -18,9 +17,22 @@ export function getDateTime() {
   return { date, time };
 }
 
+export function convertTimeToISO(timeString: string): string {
+  const today = new Date();
+  const [hours, minutes, seconds] = timeString.split(":").map(Number);
+  today.setHours(hours, minutes, seconds, 0);
+  return today.toISOString().split("T")[1];
+}
+
 export function saveData(data: Data) {
+  const copy = JSON.parse(JSON.stringify(data));
+  for (const workout of Object.values(copy)) {
+    if (workout && typeof workout === "object" && workout !== null && "sets" in workout) {
+      (workout as Workout).sets = [];
+    }
+  }
+  localStorage.setItem("data", JSON.stringify(copy));
   localStorage.setItem("date", getDateTime().date);
-  localStorage.setItem("data", JSON.stringify(data));
 }
 
 export async function saveMeasurements(measurements?: Measurements) {
@@ -37,10 +49,14 @@ export async function saveMeasurements(measurements?: Measurements) {
 export async function saveWorkout(workout?: Workout) {
   if (!workout) return;
   const { date } = getDateTime();
+  if (workout.type === "run") {
+    workout.start_time = convertTimeToISO(workout.start_time!);
+    workout.end_time = convertTimeToISO(workout.end_time!);
+  }
 
   const { error } = await supabase
     .from("workouts")
-    .upsert({ ...workout, date, goal: getGoals()[workout.type!] })
+    .upsert({ ...workout, date, goal: getGoal(workout.type!) })
     .eq("type", workout.type)
     .eq("date", date);
   if (error) console.error(error);
@@ -57,15 +73,16 @@ export const createSetter =
           : value,
     }));
 
-export function getGoals() {
+export function getGoal(workout: keyof Data) {
   const day = new Date().getDay();
   return {
+    measurements: undefined,
     pushups: day == 1 ? 100 : 50,
     squats: day == 2 ? 100 : 50,
     situps: day == 3 ? 100 : 50,
     pullups: day == 4 ? 50 : 25,
     run: day == 5 ? 4 : 2,
-  };
+  }[workout];
 }
 
 const bodyAngle = (frame: Frame, joint1: string, joint2: string, joint3: string) =>
@@ -84,7 +101,7 @@ export const armAngles = (frame: Frame) => toDegs(bodyAngle(frame, "WRIST", "ELB
 export const legAngles = (frame: Frame) => toDegs(bodyAngle(frame, "HIP", "KNEE", "ANKLE"));
 export const coreAngles = (frame: Frame) => toDegs(bodyAngle(frame, "KNEE", "HIP", "SHOULDER"));
 
-export const workoutAngle = (workout: keyof typeof THRESHOLD, frame: Frame) => {
+export const workoutAngle = (workout: keyof Data, frame: Frame) => {
   if (workout === "pushups") return armAngles(frame);
   if (workout === "squats") return legAngles(frame);
   if (workout === "situps") return coreAngles(frame);

@@ -5,9 +5,10 @@ interface InputProps {
   category: keyof Data;
   name: string;
   title?: string;
+  type?: "number" | "text";
 }
 
-const Input = ({ category, name, title }: InputProps) => {
+const Input = ({ category, name, title, type = "number" }: InputProps) => {
   const { data, setData } = useStore();
 
   return (
@@ -16,13 +17,18 @@ const Input = ({ category, name, title }: InputProps) => {
         {title ?? name}
       </label>
       <input
-        type="number"
+        type={type}
         className="input input-bordered w-full"
-        value={data[category] ? (data[category] as Record<string, number>)[name] ?? "" : ""}
+        value={
+          data[category] ? (data[category] as Record<string, number | string>)[name] ?? "" : ""
+        }
         onChange={(e) =>
           setData({
             ...data,
-            [category]: { ...(data[category] as object), [name]: Number(e.target.value) },
+            [category]: {
+              ...(data[category] as object),
+              [name]: type === "number" ? Number(e.target.value) : e.target.value,
+            },
           })
         }
       />

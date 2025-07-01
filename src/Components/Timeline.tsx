@@ -1,17 +1,28 @@
 import { FaCheckCircle, FaCircle } from "react-icons/fa";
 import { capitalize } from "@/Utils/functions";
 
-const Timeline = ({ events, page }: { events: Record<string, boolean>; page: number }) => {
+interface TimelineProps {
+  events: Record<string, boolean>;
+  page: number;
+  setPage: (page: number) => void;
+}
+
+const Timeline = ({ events, page, setPage }: TimelineProps) => {
   return (
     <ul className="timeline mx-auto -mb-10">
       {Object.entries(events).map(([event, completed], index) => (
         <li key={index}>
           {index !== 0 && <hr className={completed ? "bg-primary" : ""} />}
-          <div
-            className={`timeline-start timeline-box ${completed ? "bg-primary" : ""} ${page === index ? "border-2 border-white" : ""} m-4 text-sm`}
+          <button
+            className={`timeline-start timeline-box ${completed ? "bg-primary" : ""} ${
+              page === index ? "border-2 border-white" : ""
+            } m-4 text-sm cursor-pointer`}
+            onClick={() => {
+              setPage(index);
+            }}
           >
             {capitalize(event)}
-          </div>
+          </button>
           <div className="timeline-middle">
             {completed ? (
               <FaCheckCircle className="mx-1 h-5 w-5 text-primary" />
