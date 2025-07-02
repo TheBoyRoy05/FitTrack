@@ -17,11 +17,11 @@ export const JOINTS = [
 
 export const EMPTY_DATA: Data = {
   measurements: undefined,
+  run: undefined,
   pushups: undefined,
   squats: undefined,
   situps: undefined,
   pullups: undefined,
-  run: undefined,
 };
 
 export const THRESHOLD = {

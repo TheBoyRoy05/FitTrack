@@ -28,9 +28,9 @@ export type Workout = {
 
 export type Data = {
   measurements?: Measurements,
+  run?: Workout,
   pushups?: Workout,
   squats?: Workout,
   situps?: Workout,
   pullups?: Workout,
-  run?: Workout,
 }

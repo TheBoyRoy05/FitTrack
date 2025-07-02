@@ -22,11 +22,11 @@ function App() {
 
   const pageMap = {
     measurements: <Measurements />,
+    run: <Run />,
     pushups: <CV workout="pushups" />,
     squats: <CV workout="squats" />,
     situps: <CV workout="situps" />,
     pullups: <CV workout="pullups" />,
-    run: <Run />,
   };
 
   useEffect(() => {
