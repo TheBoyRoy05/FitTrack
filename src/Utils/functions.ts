@@ -2,6 +2,7 @@
 import { Data, Frame, Measurements, Workout } from "./types";
 import { supabase } from "./supabase";
 import { angle, sub } from "./linalg";
+import toast from "react-hot-toast";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,8 +32,14 @@ export function saveData(data: Data) {
       (workout as Workout).sets = [];
     }
   }
-  localStorage.setItem("data", JSON.stringify(copy));
-  localStorage.setItem("date", getDateTime().date);
+
+  try {
+    localStorage.setItem("data", JSON.stringify(copy));
+    localStorage.setItem("date", getDateTime().date);
+  } catch (error) {
+    console.error(error);
+    toast.error("Failed to save data");
+  }
 }
 
 export async function saveMeasurements(measurements?: Measurements) {
@@ -43,7 +50,11 @@ export async function saveMeasurements(measurements?: Measurements) {
     .from("measurements")
     .upsert({ ...measurements, date, time })
     .eq("date", date);
-  if (error) console.error(error);
+
+  if (error) {
+    console.error(error);
+    toast.error("Failed to save measurements");
+  } else toast.success("Measurements saved");
 }
 
 export async function saveWorkout(workout?: Workout) {
@@ -59,7 +70,11 @@ export async function saveWorkout(workout?: Workout) {
     .upsert({ ...workout, date, goal: getGoal(workout.type!) })
     .eq("type", workout.type)
     .eq("date", date);
-  if (error) console.error(error);
+
+  if (error) {
+    console.error(error);
+    toast.error(`Failed to save ${workout.type}`);
+  } else toast.success("Workout saved");
 }
 
 export const createSetter =
