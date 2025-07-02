@@ -6,7 +6,7 @@ import { useStore } from "./Hooks/useStore";
 import Run from "./Components/Forms/Run";
 import CV from "./Components/CV/CV";
 import { EMPTY_DATA } from "./Utils/consts";
-import { getDateTime, getGoal } from "./Utils/functions";
+import { getDate, getGoal } from "./Utils/functions";
 
 function App() {
   const { data, setData } = useStore();
@@ -32,7 +32,7 @@ function App() {
   useEffect(() => {
     const data = localStorage.getItem("data");
     const date = localStorage.getItem("date");
-    if (data && data != "{}" && date == getDateTime().date) setData(JSON.parse(data));
+    if (data && data != "{}" && date == getDate()) setData(JSON.parse(data));
   }, [setData]);
 
   return (

@@ -3,8 +3,8 @@ import { Pose, POSE_CONNECTIONS, POSE_LANDMARKS } from "@mediapipe/pose";
 import * as cam from "@mediapipe/camera_utils";
 import { useStore } from "./useStore";
 import { JOINTS, THRESHOLD } from "@/Utils/consts";
-import { Frame } from "@/Utils/types";
 import { workoutAngle } from "@/Utils/functions";
+import { Frame } from "@/Utils/types";
 
 // Singleton for Pose instance to prevent multiple script loads
 let poseInstance: Pose | null = null;
@@ -45,7 +45,7 @@ if (import.meta.hot) {
 }
 
 export function useCameraCapture(workout: keyof typeof THRESHOLD) {
-  const { collect, userMotionRef, setFrame, setData } = useStore();
+  const { collect, setFrame, setData, anglesRef } = useStore();
   const collectRef = useRef(collect);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -114,11 +114,12 @@ export function useCameraCapture(workout: keyof typeof THRESHOLD) {
 
             setFrame(frame);
             if (collectRef.current) {
-              userMotionRef.current = { ...userMotionRef.current, [Date.now()]: frame };
-
-              const angle = workoutAngle(workout, frame);
-              if (angle < THRESHOLD[workout][0]) downRef.current = true;
-              if (downRef.current && angle > THRESHOLD[workout][1]) upRef.current = true;
+              
+              const angles = workoutAngle(workout, frame);
+              const avgAngle = (angles[0] + angles[1]) / 2;
+              if (avgAngle < THRESHOLD[workout][0]) downRef.current = true;
+              if (downRef.current && avgAngle > THRESHOLD[workout][1]) upRef.current = true;
+              anglesRef.current = { ...anglesRef.current, [Date.now()]: angles };
 
               if (upRef.current && downRef.current) {
                 setData((prev) => ({

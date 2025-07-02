@@ -4,19 +4,18 @@ import Model from "./Model";
 import { useRef, useState } from "react";
 import { useStore } from "@/Hooks/useStore";
 import { useCameraCapture } from "@/Hooks/useCameraCapture";
-import { capitalize, getGoal, saveData, saveWorkout, sleep } from "@/Utils/functions";
-import { Motion } from "@/Utils/types";
+import { capitalize, getTime, getGoal, saveData, saveWorkout, sleep } from "@/Utils/functions";
+import { Angles } from "@/Utils/types";
 import Notes from "../Forms/Notes";
 
 const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" }) => {
-  const { collect, setCollect, userMotionRef, data, setData } = useStore();
+  const { collect, setCollect, anglesRef, data, setData } = useStore();
   const { videoRef, canvasRef } = useCameraCapture(workout);
-  const startTime = useRef<string>("");
   const running = useRef(false);
-  const sets = useRef<Motion[]>([]);
+  const sets = useRef<Angles[]>([]);
   const [text, setText] = useState("");
 
-  const handleStartSet = async () => {
+  const startSet = async () => {
     setText("Ready");
     await sleep(1000);
     setText("Set");
@@ -26,31 +25,30 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
     setText("");
 
     setCollect(true);
-    if (!running.current) {
-      startTime.current = new Date().toISOString().split("T")[1];
-      userMotionRef.current = {};
-      running.current = true;
-      sets.current = [];
-    }
+    if (!running.current) startWorkout();
   };
 
-  const handleStopSet = () => {
+  const stopSet = () => {
     setCollect(false);
-    const newSet = { ...userMotionRef.current };
+    const newSet = { ...anglesRef.current };
     sets.current = [...sets.current, newSet];
   };
 
-  const handleStopWorkout = () => {
+  const startWorkout = () => {
+    setData((prev) => ({
+      ...prev,
+      [workout]: { type: workout, start_time: getTime() },
+    }));
+    running.current = true;
+    anglesRef.current = {};
+    sets.current = [];
+  };
+
+  const finishWorkout = () => {
     running.current = false;
     const updatedData = {
       ...data,
-      [workout]: {
-        ...data[workout],
-        type: workout,
-        start_time: startTime.current,
-        end_time: new Date().toISOString().split("T")[1],
-        sets: sets.current,
-      },
+      [workout]: { ...data[workout], end_time: getTime(), sets: sets.current },
     };
 
     setData(updatedData);
@@ -86,17 +84,28 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
       <div className="flex w-full items-center gap-4">
         <button
           className={`btn btn-lg flex-1 ${collect ? "btn-warning" : "btn-success"}`}
-          onClick={collect ? handleStopSet : handleStartSet}
+          onClick={collect ? stopSet : startSet}
         >
           {collect ? "Stop Set" : "Start Set"}
         </button>
         <button
           className="btn btn-lg btn-primary flex-1"
           disabled={!running.current}
-          onClick={handleStopWorkout}
+          onClick={finishWorkout}
         >
           Finish and Save
         </button>
+
+        {/* DEBUG */}
+        {/* <button
+          className="btn btn-lg btn-error flex-1"
+          onClick={() => {
+            setData({ ...data, [workout]: { type: workout } });
+            saveData({ ...data, [workout]: { type: workout } });
+          }}
+        >
+          Reset
+        </button> */}
       </div>
     </div>
   );

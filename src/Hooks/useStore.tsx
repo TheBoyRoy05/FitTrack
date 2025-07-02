@@ -1,15 +1,15 @@
 import { create } from "zustand";
-import { Data, Frame, Motion } from "@/Utils/types";
+import { Angles, Data, Frame } from "@/Utils/types";
 import { createSetter } from "@/Utils/functions";
 import { EMPTY_DATA } from "@/Utils/consts";
 
-const userMotionRef = { current: {} as Motion };
+const anglesRef = { current: {} as Angles };
 
 interface StoreType {
   data: Data;
   frame: Frame;
   collect: boolean;
-  userMotionRef: typeof userMotionRef;
+  anglesRef: typeof anglesRef;
   setData: (data: Data | ((prev: Data) => Data)) => void;
   setFrame: (frame: Frame | ((prev: Frame) => Frame)) => void;
   setCollect: (collect: boolean | ((prev: boolean) => boolean)) => void;
@@ -17,7 +17,7 @@ interface StoreType {
 
 export const useStore = create<StoreType>((set, get) => ({
   data: EMPTY_DATA,
-  userMotionRef,
+  anglesRef,
   collect: false,
   frame: {} as Frame,
   setData: createSetter<StoreType>(set)("data"),

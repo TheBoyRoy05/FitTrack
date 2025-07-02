@@ -1,5 +1,5 @@
 export type Frame = Record<string, number[]>;
-export type Motion = Record<number, Frame>;
+export type Angles = Record<number, number[]>;
 
 export type Measurements = {
   left_forearm?: number,
@@ -20,7 +20,7 @@ export type Measurements = {
 export type Workout = {
   type?: "pushups" | "squats" | "situps" | "pullups" | "run",
   actual?: number,
-  sets?: Motion[],
+  sets?: Angles[],
   notes?: string,
   start_time?: string,
   end_time?: string,
