@@ -11,19 +11,19 @@ const Measurements = () => {
       <h1 className="text-5xl text-center font-bold hero-text-shadow">Measurements</h1>
       <form className="flex flex-col gap-4 pb-6">
         <div className="flex gap-4">
+          <Input category="measurements" name="left_bicep" title="Left Bicep (in)" />
           <Input category="measurements" name="left_forearm" title="Left Forearm (in)" />
+        </div>
+        <div className="flex gap-4">
+          <Input category="measurements" name="right_bicep" title="Right Bicep (in)" />
           <Input category="measurements" name="right_forearm" title="Right Forearm (in)" />
         </div>
         <div className="flex gap-4">
-          <Input category="measurements" name="left_bicep" title="Left Bicep (in)" />
-          <Input category="measurements" name="right_bicep" title="Right Bicep (in)" />
-        </div>
-        <div className="flex gap-4">
           <Input category="measurements" name="left_thigh" title="Left Thigh (in)" />
-          <Input category="measurements" name="right_thigh" title="Right Thigh (in)" />
+          <Input category="measurements" name="left_calf" title="Left Calf (in)" />
         </div>
         <div className="flex gap-4">
-          <Input category="measurements" name="left_calf" title="Left Calf (in)" />
+          <Input category="measurements" name="right_thigh" title="Right Thigh (in)" />
           <Input category="measurements" name="right_calf" title="Right Calf (in)" />
         </div>
         <Input category="measurements" name="chest" title="Chest (in)" />
