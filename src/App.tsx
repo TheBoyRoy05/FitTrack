@@ -7,6 +7,7 @@ import Run from "./Components/Forms/Run";
 import CV from "./Components/CV/CV";
 import { EMPTY_DATA } from "./Utils/consts";
 import { getDate, getGoal } from "./Utils/functions";
+import Photos from "./Components/Photos";
 
 function App() {
   const { data, setData } = useStore();
@@ -22,6 +23,7 @@ function App() {
 
   const pageMap = {
     measurements: <Measurements />,
+    photos: <Photos />,
     run: <Run />,
     pushups: <CV workout="pushups" />,
     squats: <CV workout="squats" />,

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Data, Frame, Measurements, Workout } from "./types";
+import { Data, Frame, Measurements, Photos, Workout } from "./types";
 import { supabase } from "./supabase";
 import { angle, sub } from "./linalg";
 import toast from "react-hot-toast";
@@ -12,15 +12,32 @@ export function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export const getDate = () => new Date().toISOString().split("T")[0];
-export const getTime = () => new Date().toISOString().split("T")[1];
+export const getDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-export function convertTimeToISO(timeString: string): string {
-  const today = new Date();
-  const [hours, minutes, seconds] = timeString.split(":").map(Number);
-  today.setHours(hours, minutes, seconds, 0);
-  return today.toISOString().split("T")[1];
-}
+export const getTimezoneOffset = () => {
+  const laOffset = new Date().toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles",
+    timeZoneName: "short",
+  });
+  return laOffset.includes("PDT") ? "-07" : "-08";
+};
+
+export const getTime = () => {
+  const now = new Date();
+  const laTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+
+  const hours = String(laTime.getHours()).padStart(2, "0");
+  const minutes = String(laTime.getMinutes()).padStart(2, "0");
+  const seconds = String(laTime.getSeconds()).padStart(2, "0");
+
+  return `${hours}:${minutes}:${seconds}${getTimezoneOffset()}`;
+};
 
 export function saveData(data: Data) {
   try {
@@ -48,12 +65,29 @@ export async function saveMeasurements(measurements?: Measurements) {
   } else toast.success("Successfully saved measurements");
 }
 
+export async function savePhotos(photos?: Photos) {
+  if (!photos) return;
+  const date = getDate();
+  const time = getTime();
+
+  const { error } = await supabase
+    .from("photos")
+    .upsert({ ...photos, date, time })
+    .eq("date", date);
+
+  if (error) {
+    console.error(error);
+    toast.error("Failed to save photos");
+  } else toast.success("Successfully saved photos");
+}
+
 export async function saveWorkout(workout?: Workout) {
   if (!workout) return;
   const date = getDate();
+
   if (workout.type === "run") {
-    workout.start_time = convertTimeToISO(workout.start_time!);
-    workout.end_time = convertTimeToISO(workout.end_time!);
+    workout.start_time = `${workout.start_time}${getTimezoneOffset()}`;
+    workout.end_time = `${workout.end_time}${getTimezoneOffset()}`;
   }
 
   const { error } = await supabase
@@ -79,10 +113,9 @@ export const createSetter =
           : value,
     }));
 
-export function getGoal(workout: keyof Data) {
+export function getGoal(workout: "pushups" | "squats" | "situps" | "pullups" | "run") {
   const day = new Date().getDay();
   return {
-    measurements: undefined,
     pushups: day == 1 ? 100 : 50,
     squats: day == 2 ? 100 : 50,
     situps: day == 3 ? 100 : 50,

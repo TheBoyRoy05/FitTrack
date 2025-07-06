@@ -1,6 +1,11 @@
 export type Frame = Record<string, number[]>;
 export type Angles = Record<number, number[]>;
 
+export type Photos = {
+  front?: string;
+  back?: string;
+};
+
 export type Measurements = {
   left_forearm?: number,
   right_forearm?: number,
@@ -28,6 +33,7 @@ export type Workout = {
 
 export type Data = {
   measurements?: Measurements,
+  photos?: Photos,
   run?: Workout,
   pushups?: Workout,
   squats?: Workout,

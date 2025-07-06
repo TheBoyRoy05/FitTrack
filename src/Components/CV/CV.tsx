@@ -7,6 +7,7 @@ import { useCameraCapture } from "@/Hooks/useCameraCapture";
 import { capitalize, getTime, getGoal, saveData, saveWorkout, sleep } from "@/Utils/functions";
 import { Angles } from "@/Utils/types";
 import Notes from "../Forms/Notes";
+import CenterText from "../CenterText";
 
 const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" }) => {
   const { collect, setCollect, anglesRef, data, setData } = useStore();
@@ -74,9 +75,7 @@ const CV = ({ workout }: { workout: "pushups" | "squats" | "situps" | "pullups" 
           <video ref={videoRef} style={{ display: "none" }} />
           <canvas ref={canvasRef} className="w-full h-full rounded-md" />
         </div>
-        <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center">
-          <h1 className="flex-1 text-[7vw] z-50 text-center sporting-outline">{text}</h1>
-        </div>
+        <CenterText text={text} />
       </div>
 
       <Notes category={workout} />

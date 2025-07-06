@@ -17,6 +17,7 @@ export const JOINTS = [
 
 export const EMPTY_DATA: Data = {
   measurements: undefined,
+  photos: undefined,
   run: undefined,
   pushups: undefined,
   squats: undefined,
