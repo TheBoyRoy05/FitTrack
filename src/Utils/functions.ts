@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Data, Frame, Measurements, Photos, Workout } from "./types";
+import { Data, Frame, Measurements, Photos, Workout, CVWorkout } from "./types";
 import { supabase } from "./supabase";
 import { angle, sub } from "./linalg";
 import toast from "react-hot-toast";
@@ -113,7 +113,7 @@ export const createSetter =
           : value,
     }));
 
-export function getGoal(workout: "pushups" | "squats" | "situps" | "pullups" | "run") {
+export function getGoal(workout: CVWorkout | "run") {
   const day = new Date().getDay();
   return {
     pushups: day == 1 ? 100 : 50,

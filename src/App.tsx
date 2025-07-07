@@ -4,7 +4,7 @@ import Timeline from "./Components/Timeline";
 import { NextArrow, PrevArrow } from "./Components/Arrows";
 import { useStore } from "./Hooks/useStore";
 import Run from "./Components/Forms/Run";
-import CV from "./Components/CV/CV";
+import Workout from "./Components/Workout";
 import { EMPTY_DATA } from "./Utils/consts";
 import { getDate, getGoal } from "./Utils/functions";
 import Photos from "./Components/Photos";
@@ -25,10 +25,10 @@ function App() {
     measurements: <Measurements />,
     photos: <Photos />,
     run: <Run />,
-    pushups: <CV workout="pushups" />,
-    squats: <CV workout="squats" />,
-    situps: <CV workout="situps" />,
-    pullups: <CV workout="pullups" />,
+    pushups: <Workout workout="pushups" />,
+    squats: <Workout workout="squats" />,
+    situps: <Workout workout="situps" />,
+    pullups: <Workout workout="pullups" />,
   };
 
   useEffect(() => {

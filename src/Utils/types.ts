@@ -1,6 +1,8 @@
 export type Frame = Record<string, number[]>;
 export type Angles = Record<number, number[]>;
 
+export type CVWorkout = "pushups" | "squats" | "situps" | "pullups";
+
 export type Photos = {
   front?: string;
   back?: string;
@@ -23,7 +25,7 @@ export type Measurements = {
 }
 
 export type Workout = {
-  type?: "pushups" | "squats" | "situps" | "pullups" | "run",
+  type?: CVWorkout | "run",
   actual?: number,
   sets?: Angles[],
   notes?: string,
