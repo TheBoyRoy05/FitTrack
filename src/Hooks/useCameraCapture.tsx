@@ -101,14 +101,11 @@ export function useCameraCapture(workout: CVWorkout) {
   };
 
   const checkRep = (angles: number[], thresholds: number[]) => {
-    if (angles[0] < thresholds[0] && angles[1] < thresholds[0]) {
-      downRef.current = true;
-    }
-    if (downRef.current && angles[0] > thresholds[1] && angles[1] > thresholds[1]) {
-      upRef.current = true;
-    }
-    anglesRef.current = { ...anglesRef.current, [Date.now()]: angles };
+    const avgAngle = (angles[0] + angles[1]) / 2;
+    if (avgAngle < thresholds[0]) downRef.current = true;
+    if (downRef.current && avgAngle > thresholds[1]) upRef.current = true;
 
+    anglesRef.current = { ...anglesRef.current, [Date.now()]: angles };
     if (upRef.current && downRef.current) {
       setData((prev) => ({
         ...prev,

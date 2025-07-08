@@ -7,12 +7,17 @@ import Chart from "react-apexcharts";
 import { useChart } from "@/Hooks/useChart";
 import { useWorkout } from "@/Hooks/useWorkout";
 import { CVWorkout } from "@/Utils/types";
+import { memo, useMemo } from "react";
+
+const MemoizedChart = memo(Chart);
 
 const Workout = ({ workout }: { workout: CVWorkout }) => {
   const { startSet, stopSet, finishWorkout, running, text } = useWorkout(workout);
   const { videoRef, canvasRef } = useCameraCapture(workout);
   const { collect, data } = useStore();
   const chartProps = useChart(workout);
+
+  const memoizedChart = useMemo(() => <MemoizedChart {...chartProps} />, [chartProps]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -26,7 +31,7 @@ const Workout = ({ workout }: { workout: CVWorkout }) => {
           <canvas ref={canvasRef} className="w-full h-full rounded-md" />
         </div>
         <div className="flex-1 min-w-0 aspect-[4/3] bg-base-300 shadow-lg rounded-lg p-4">
-          <Chart {...chartProps} />
+          {memoizedChart}
         </div>
         <CenterText text={text} />
       </div>

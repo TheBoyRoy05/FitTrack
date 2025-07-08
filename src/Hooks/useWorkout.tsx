@@ -1,13 +1,12 @@
 import { useRef, useState } from "react";
 import { sleep, getTime, saveData, saveWorkout } from "@/Utils/functions";
-import { Angles, CVWorkout } from "@/Utils/types";
+import { CVWorkout } from "@/Utils/types";
 import { useStore } from "./useStore";
 
 export const useWorkout = (workout: CVWorkout) => {
   const { setCollect, anglesRef, data, setData } = useStore();
-  const running = useRef(false);
-  const sets = useRef<Angles[]>([]);
   const [text, setText] = useState("");
+  const running = useRef(false);
 
   const startSet = async () => {
     setText("Ready");
@@ -19,30 +18,38 @@ export const useWorkout = (workout: CVWorkout) => {
     setText("");
 
     setCollect(true);
+    anglesRef.current = {};
     if (!running.current) startWorkout();
   };
 
   const stopSet = () => {
     setCollect(false);
-    const newSet = { ...anglesRef.current };
-    sets.current = [...sets.current, newSet];
+    setData({
+      ...data,
+      [workout]: {
+        ...data[workout],
+        sets: [...(data[workout]?.sets || []), { ...anglesRef.current }],
+      },
+    });
   };
 
   const startWorkout = () => {
+    running.current = true;
     setData((prev) => ({
       ...prev,
-      [workout]: { type: workout, start_time: getTime() },
+      [workout]: {
+        ...prev[workout],
+        type: workout,
+        start_time: prev[workout]?.start_time || getTime(),
+      },
     }));
-    running.current = true;
-    anglesRef.current = {};
-    sets.current = [];
   };
 
   const finishWorkout = () => {
     running.current = false;
     const updatedData = {
       ...data,
-      [workout]: { ...data[workout], end_time: getTime(), sets: sets.current },
+      [workout]: { ...data[workout], end_time: getTime() },
     };
 
     setData(updatedData);

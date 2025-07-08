@@ -1,35 +1,52 @@
 import { THRESHOLD } from "@/Utils/consts";
 import { useStore } from "./useStore";
 import { CVWorkout } from "@/Utils/types";
+import { useMemo } from "react";
 
 export const useChart = (workout: CVWorkout) => {
   const { anglesRef } = useStore();
 
-  return {
-    series: [
-      { name: "Left", data: Object.values(anglesRef.current).map(([left]) => left) },
-      { name: "Right", data: Object.values(anglesRef.current).map(([, right]) => right) },
-    ],
-    options: {
-      chart: { type: "line" as const },
-      stroke: { width: 3 },
-      tooltip: { theme: "dark" },
-      xaxis: { axisTicks: { show: false }, labels: { show: false } },
-      yaxis: {
-        decimalsInFloat: 0,
-        labels: { style: { colors: ["#ddd"] } },
-        title: {
-          text: "Angle",
-          style: { color: "#ddd", fontSize: "12px", fontWeight: "bold" },
+  const chartData = useMemo(() => {
+    const values = Object.values(anglesRef.current).slice(-150);
+    return {
+      series: [
+        { name: "Left", data: values.map(([left]) => left) },
+        {
+          name: "Average",
+          data: values.map(([left, right]) => (left + right) / 2),
+        },
+        { name: "Right", data: values.map(([, right]) => right) },
+      ],
+      options: {
+        chart: {
+          type: "line" as const,
+          animations: {
+            enabled: false, // Disable animations for better performance
+          },
+          redrawOnWindowResize: false,
+          redrawOnParentResize: false,
+        },
+        stroke: { width: [3, 2, 3], dashArray: [0, 2, 0] },
+        tooltip: { theme: "dark" },
+        xaxis: { axisTicks: { show: false }, labels: { show: false } },
+        yaxis: {
+          decimalsInFloat: 0,
+          labels: { style: { colors: ["#ddd"] } },
+          title: {
+            text: "Angle",
+            style: { color: "#ddd", fontSize: "12px", fontWeight: "bold" },
+          },
+        },
+        legend: { show: true, labels: { colors: ["#ddd", "#ddd", "#ddd"] } },
+        annotations: {
+          yaxis: [
+            { y: THRESHOLD[workout][0], borderColor: "#FF4500", strokeDashArray: 0 },
+            { y: THRESHOLD[workout][1], borderColor: "#FF4500", strokeDashArray: 0 },
+          ],
         },
       },
-      legend: { show: true, labels: { colors: ["#ddd", "#ddd"] } },
-      annotations: {
-        yaxis: [
-          { y: THRESHOLD[workout][0], borderColor: "#FF4500", strokeDashArray: 0 },
-          { y: THRESHOLD[workout][1], borderColor: "#FF4500", strokeDashArray: 0 },
-        ],
-      },
-    }
-  };
+    };
+  }, [anglesRef.current, workout]);
+
+  return chartData;
 };

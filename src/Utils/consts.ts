@@ -27,7 +27,7 @@ export const EMPTY_DATA: Data = {
 
 export const THRESHOLD = {
   pushups: [110, 160],
-  squats: [100, 160],
-  situps: [100, 140],
+  squats: [80, 155],
+  situps: [90, 125],
   pullups: [105, 160],
 };
