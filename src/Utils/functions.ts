@@ -118,9 +118,9 @@ export function getGoal(workout: CVWorkout | "run") {
   return {
     pushups: day == 1 ? 100 : 50,
     squats: day == 2 ? 100 : 50,
-    situps: day == 3 ? 100 : 50,
-    pullups: day == 4 ? 50 : 25,
-    run: day == 5 ? 4 : 2,
+    situps: day == 4 ? 100 : 50,
+    pullups: day == 5 ? 50 : 25,
+    run: day == 6 ? 4 : 2,
   }[workout];
 }
 

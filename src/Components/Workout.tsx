@@ -8,11 +8,13 @@ import { useChart } from "@/Hooks/useChart";
 import { useWorkout } from "@/Hooks/useWorkout";
 import { CVWorkout } from "@/Utils/types";
 import { memo, useMemo } from "react";
+import Timer from "./Timer";
 
 const MemoizedChart = memo(Chart);
 
 const Workout = ({ workout }: { workout: CVWorkout }) => {
-  const { startSet, stopSet, finishWorkout, running, text } = useWorkout(workout);
+  const { startSet, stopSet, finishWorkout, running, text, setStartTime, workoutStartTime } =
+    useWorkout(workout);
   const { videoRef, canvasRef } = useCameraCapture(workout);
   const { collect, data } = useStore();
   const chartProps = useChart(workout);
@@ -20,18 +22,24 @@ const Workout = ({ workout }: { workout: CVWorkout }) => {
   const memoizedChart = useMemo(() => <MemoizedChart {...chartProps} />, [chartProps]);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-7">
       <h1 className="text-5xl text-center font-bold hero-text-shadow">
         {data[workout]?.actual || 0} / {getGoal(workout)} {capitalize(workout)}
       </h1>
 
       <div className="flex gap-4 relative w-full">
-        <div className="flex-1 min-w-0 aspect-[4/3] bg-base-300 shadow-lg rounded-lg p-4">
+        <div className="flex-1 flex flex-col gap-2 min-w-0 aspect-[4/3] bg-base-300 shadow-lg rounded-lg p-4">
           <video ref={videoRef} style={{ display: "none" }} />
           <canvas ref={canvasRef} className="w-full h-full rounded-md" />
+          <Timer title="Set Time" startTime={setStartTime ?? undefined} isRunning={collect} />
         </div>
-        <div className="flex-1 min-w-0 aspect-[4/3] bg-base-300 shadow-lg rounded-lg p-4">
-          {memoizedChart}
+        <div className="flex-1 flex flex-col justify-between gap-2 min-w-0 aspect-[4/3] bg-base-300 shadow-lg rounded-lg p-4">
+          <div className="flex-1 flex flex-col justify-center">{memoizedChart}</div>
+          <Timer
+            title="Workout Time"
+            startTime={workoutStartTime ?? undefined}
+            isRunning={running}
+          />
         </div>
         <CenterText text={text} />
       </div>

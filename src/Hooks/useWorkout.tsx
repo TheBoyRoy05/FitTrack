@@ -7,6 +7,8 @@ export const useWorkout = (workout: CVWorkout) => {
   const { setCollect, anglesRef, data, setData } = useStore();
   const [text, setText] = useState("");
   const running = useRef(false);
+  const setStartTime = useRef<number | null>(null);
+  const workoutStartTime = useRef<number | null>(null);
 
   const startSet = async () => {
     setText("Ready");
@@ -18,6 +20,7 @@ export const useWorkout = (workout: CVWorkout) => {
     setText("");
 
     setCollect(true);
+    setStartTime.current = Date.now();
     anglesRef.current = {};
     if (!running.current) startWorkout();
   };
@@ -35,6 +38,7 @@ export const useWorkout = (workout: CVWorkout) => {
 
   const startWorkout = () => {
     running.current = true;
+    workoutStartTime.current = Date.now();
     setData((prev) => ({
       ...prev,
       [workout]: {
@@ -64,5 +68,7 @@ export const useWorkout = (workout: CVWorkout) => {
     finishWorkout,
     running: running.current,
     text,
+    setStartTime: setStartTime.current,
+    workoutStartTime: workoutStartTime.current,
   };
 };

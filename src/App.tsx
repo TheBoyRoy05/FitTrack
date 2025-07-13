@@ -40,7 +40,7 @@ function App() {
   return (
     <div className="min-h-screen flex">
       <PrevArrow page={page} setPage={setPage} />
-      <div className="min-h-screen flex flex-col w-[60vw] mx-auto py-10">
+      <div className="min-h-screen flex flex-col w-[60vw] mx-auto py-6">
         <Timeline events={completedPages} page={page} setPage={setPage} />
         {Object.values(pageMap)[page]}
       </div>

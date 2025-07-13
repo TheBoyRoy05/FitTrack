@@ -6,6 +6,7 @@ export type CVWorkout = "pushups" | "squats" | "situps" | "pullups";
 export type Photos = {
   front?: string;
   back?: string;
+  notes?: string;
 };
 
 export type Measurements = {

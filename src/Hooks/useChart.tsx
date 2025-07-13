@@ -26,15 +26,21 @@ export const useChart = (workout: CVWorkout) => {
           redrawOnWindowResize: false,
           redrawOnParentResize: false,
         },
+        title: { text: "Angle Tracking", align: "center", style: { color: "#fff", fontSize: "24px", fontWeight: "bold" } },
         stroke: { width: [3, 2, 3], dashArray: [0, 2, 0] },
         tooltip: { theme: "dark" },
-        xaxis: { axisTicks: { show: false }, labels: { show: false } },
+        xaxis: {
+          axisTicks: { show: false },
+          labels: { show: false },
+          title: { text: "Time", style: { color: "#ddd", fontSize: "16px", fontWeight: "bold" } },
+        },
         yaxis: {
           decimalsInFloat: 0,
           labels: { style: { colors: ["#ddd"] } },
           title: {
             text: "Angle",
-            style: { color: "#ddd", fontSize: "12px", fontWeight: "bold" },
+            offsetX: -5,
+            style: { color: "#ddd", fontSize: "16px", fontWeight: "bold" },
           },
         },
         legend: { show: true, labels: { colors: ["#ddd", "#ddd", "#ddd"] } },
